@@ -1,0 +1,214 @@
+.piechart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+  width: 100%;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.piechart-content {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 20px;
+}
+
+.piechart-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 20px;
+  background: white;
+  margin-top: 1rem;
+  flex: 0 0 auto;
+}
+
+.piechart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pie-label-list {
+  flex: 0 0 400px;
+  margin-top: 1rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  overflow-y: auto;
+  max-height: 450px;
+}
+
+.pie-label-list h3 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: #333;
+  font-family: "Poppins", sans-serif;
+}
+
+.pie-label-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pie-label-item {
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+
+.pie-label-item:hover, .pie-label-item.active {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateX(5px);
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Add shadow for hover effect */
+}
+
+.pie-label-item.active {
+  background-color: rgba(0, 0, 0, 0.1); /* Highlight active item */
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Add shadow for active item */
+  transform: translateX(5px); /* Slightly move the active item */
+}
+
+.pie-label-item.domain-heading {
+  font-size: 1.1rem;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  padding: 10px 15px;
+  border-left-width: 6px;
+  border-left-style: solid;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.pie-label-item.domain-heading:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Highlight domain on hover */
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3); /* Add shadow for domain hover */
+}
+
+.pie-label-item .label-name {
+  font-weight: bold;
+}
+
+.pie-label-item .label-name:hover {
+  font-weight: bold; /* Highlight the name on hover */
+}
+
+.pie-label-item .label-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.pie-label-item .label-value:hover {
+  font-weight: bold; /* Highlight the value on hover */
+}
+
+.pie-label-item .percentage {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.pie-label-item .amount {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.label-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.label-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.percentage {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.amount {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.recharts-legend-wrapper {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-top: 1rem;
+  width: 100%;
+  text-align: center;
+}
+
+.recharts-tooltip-wrapper {
+  transform: translate(20px, -50%); /* Position tooltip to the right of the pie chart */
+  pointer-events: none;
+}
+
+.piechart-container h2 {
+  background: linear-gradient(90deg, #ff7f50, #87cefa, #32cd32, #ff69b4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.no-data-message {
+  font-size: 1.2rem;
+  color: red;
+  text-align: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* For mobile responsiveness */
+@media (max-width: 900px) {
+  .piechart-content {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .pie-label-list {
+    width: 100%;
+    max-height: none;
+    margin-top: 20px;
+  }
+}
+
+.gradient-heading {
+  background: linear-gradient(90deg, #ff7f50, #87cefa, #32cd32, #ff69b4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}

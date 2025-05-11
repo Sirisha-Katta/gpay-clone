@@ -1,0 +1,387 @@
+from fastapi import FastAPI, Depends, HTTPException
+from pymongo.database import Database
+from database import get_db
+from pydantic import BaseModel
+from typing import List
+from bson import ObjectId
+from bson.errors import InvalidId
+from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
+from bson import ObjectId
+
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Replace with your frontend's URL
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
+# Temporary in-memory storage for logged-in user
+logged_in_user = {"user_id": None}
+
+class TransactionCreate(BaseModel):
+    sender_id: str  # Use str because MongoDB ObjectIds are strings
+    receiver_id: str
+    amount: float
+    label: str
+
+    # Add validation for amount
+    @classmethod
+    def validate(cls, values):
+        if values.get("amount") <= 0:
+            raise ValueError("Amount must be greater than zero")
+        return values
+
+class UserCreate(BaseModel):
+    name: str
+    balance: float
+    phonenumber: str
+    pin: str  # Add pin field
+
+class LoginRequest(BaseModel):
+    name: str
+    pin: str  # Add pin field
+
+class SendMoneyRequest(BaseModel):
+    receiver_name: str
+    amount: float
+    label: str
+    subcategory: str  # Add subcategory field
+    timestamp: str  # Add timestamp parameter
+
+class CreateLabelRequest(BaseModel):
+    label: str
+    subcategories: List[str] = []  # Add subcategories field
+
+class GeneratePlanRequest(BaseModel):
+    income: float
+    preferences: List[str]
+
+class Preferences(BaseModel):  # Add the colon here
+    income: float
+    preferences: List[str]
+
+class PreferencesRequest(BaseModel):
+    income: float
+    preferences: List[str]
+
+@app.post("/user/{user_id}/preferences")
+def save_preferences(user_id: str, request: PreferencesRequest, db: Database = Depends(get_db)):
+    try:
+        user_object_id = ObjectId(user_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+
+    preferences_collection = db["preferences"]
+    preferences_data = {
+        "user_id": user_object_id,
+        "income": request.income,
+        "preferences": request.preferences,
+    }
+
+    # Upsert preferences for the user
+    preferences_collection.update_one(
+        {"user_id": user_object_id},
+        {"$set": preferences_data},
+        upsert=True,
+    )
+
+    # Convert ObjectId to string before returning the response
+    preferences_data["user_id"] = str(preferences_data["user_id"])
+
+    return {"message": "Preferences saved successfully", "preferences": preferences_data}
+
+@app.get("/user/{user_id}/preferences")
+def get_preferences(user_id: str, db: Database = Depends(get_db)):
+    try:
+        user_object_id = ObjectId(user_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+
+    preferences_collection = db["preferences"]
+    preferences = preferences_collection.find_one({"user_id": user_object_id}, {"_id": 0})
+
+    if not preferences:
+        raise HTTPException(status_code=404, detail="Preferences not found")
+
+    # Convert ObjectId to string before returning the response
+    preferences["user_id"] = str(user_object_id)
+
+    return {"preferences": preferences}
+@app.post("/login/")
+def login(request: LoginRequest, db: Database = Depends(get_db)):
+    users_collection = db["users"]
+    user = users_collection.find_one(
+        {"name": {"$regex": f"^{request.name}$", "$options": "i"}, "pin": request.pin}
+    )
+    print(f"Query: {{'name': {request.name}, 'pin': {request.pin}}}, Result: {user}")
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # Convert ObjectId to string before returning the response
+    user_id = str(user["_id"])
+    
+    # Set the logged_in_user global variable
+    logged_in_user["user_id"] = user_id
+
+    return {"message": "Login successful", "user_id": user_id}
+@app.post("/send-money/")
+def send_money(request: SendMoneyRequest, db: Database = Depends(get_db)):
+    # Ensure a user is logged in
+    if not logged_in_user["user_id"]:
+        raise HTTPException(status_code=401, detail="User not logged in")
+
+    sender_id = ObjectId(logged_in_user["user_id"])
+    users_collection = db["users"]
+    transactions_collection = db["transactions"]
+    labels_collection = db["labels"]
+
+    # Validate label
+    if not labels_collection.find_one({"label": request.label}):
+        raise HTTPException(status_code=400, detail="Invalid label")
+
+    # Check if receiver exists, if not, create them
+    receiver = users_collection.find_one({"name": request.receiver_name})
+    if not receiver:
+        new_receiver = {"name": request.receiver_name, "balance": 0.0}
+        result = users_collection.insert_one(new_receiver)
+        receiver_id = result.inserted_id
+    else:
+        receiver_id = receiver["_id"]
+
+    sender = users_collection.find_one({"_id": sender_id})
+
+    if not sender:
+        raise HTTPException(status_code=404, detail="Sender not found")
+
+    if sender["balance"] < request.amount:
+        raise HTTPException(status_code=400, detail="Insufficient funds")
+
+    # Update balances
+    users_collection.update_one({"_id": sender_id}, {"$inc": {"balance": -request.amount}})
+    users_collection.update_one({"_id": receiver_id}, {"$inc": {"balance": request.amount}})
+
+    # Create transaction
+    transaction = {
+        "sender_id": sender_id,
+        "receiver_id": receiver_id,
+        "amount": request.amount,
+        "label": request.label,
+        "subcategory": request.subcategory
+    }
+    transactions_collection.insert_one(transaction)
+
+    return {"message": "Transaction successful", "receiver_id": str(receiver_id)}
+
+
+# @app.get("/pie-chart-data/{user_id}")
+# def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
+#     try:
+#         user_object_id = ObjectId(user_id)
+        
+#         transactions_collection = db["transactions"]
+#         labels_collection = db["labels"]
+
+#         # Debug print
+#         print(f"Fetching pie chart data for user: {user_id}")
+
+#         # Check if user has transactions
+#         if not transactions_collection.find_one({"sender_id": user_object_id}):
+#             return {"data": []}
+
+#         pipeline = [
+#             {"$match": {"sender_id": user_object_id}},
+#             {"$group": {
+#                 "_id": {
+#                     "label": "$label",
+#                     "subcategory": "$subcategory"
+#                 },
+#                 "amount": {"$sum": "$amount"}
+#             }}
+#         ]
+        
+#         results = list(transactions_collection.aggregate(pipeline))
+#         print(f"Aggregation results: {results}")  # Debug print
+
+#         # Get label colors
+#         labels = list(labels_collection.find({}, {"_id": 0, "label": 1, "color": 1}))
+#         label_colors = {label["label"]: label["color"] for label in labels}
+
+#         # Format chart data with error handling
+#         chart_data = []
+#         total_amount = sum(result["amount"] for result in results)
+        
+#         for result in results:
+#             try:
+#                 label = result["_id"]["label"]
+#                 subcategory = result["_id"]["subcategory"]
+#                 amount = result["amount"]
+#                 percentage = (amount / total_amount * 100) if total_amount > 0 else 0
+                
+#                 chart_data.append({
+#                     "label": label,
+#                     "subcategory": subcategory,
+#                     "amount": amount,
+#                     "percentage": percentage,
+#                     "color": label_colors.get(label, "#CCCCCC")
+#                 })
+#             except Exception as e:
+#                 print(f"Error processing result: {e}")
+#                 continue
+
+#         return {"data": chart_data}
+
+#     except Exception as e:
+#         print(f"Error in pie chart data: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/pie-chart-data/{user_id}")
+def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
+    try:
+        user_object_id = ObjectId(user_id)
+        transactions = db["transactions"]
+        labels = db["labels"]
+
+        # Get all labels with colors first
+        label_colors = {
+            label["label"]: label["color"]
+            for label in labels.find({}, {"label": 1, "color": 1, "_id": 0})
+        }
+
+        # pipeline = [
+        #     {"$match": {"sender_id": user_object_id}},
+        #     {"$group": {
+        #         "_id": {
+        #             "label": "$label",
+        #             "subcategory": {"$ifNull": ["$subcategory", "$label"]}
+        #         },
+        #         "amount": {"$sum": "$amount"}
+        #     }}
+        # ]
+        pipeline = [
+        {"$match": {"sender_id": user_object_id}},
+        {"$group": {
+            "_id": {
+            "label": "$label",
+            "subcategory": {"$ifNull": ["$subcategory", "Other"]}  # Change default to "Other" or something else
+            },
+            "amount": {"$sum": "$amount"}
+        }}
+        ]
+
+        results = list(transactions.aggregate(pipeline))
+        total = sum(r["amount"] for r in results)
+
+        chart_data = []
+        for r in results:
+            label = r["_id"]["label"]
+            if label in label_colors:
+                data = {
+                    "label": label,
+                    "subcategory": r["_id"].get("subcategory", label),
+                    "amount": r["amount"],
+                    "percentage": round((r["amount"] / total * 100), 2),
+                    "color": label_colors[label]
+                }
+                chart_data.append(data)
+
+        return {"data": chart_data}
+
+    except Exception as e:
+        print(f"Error in pie chart data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+@app.get("/transactions/{user_id}")
+def get_transactions(user_id: str, db: Database = Depends(get_db)):
+    try:
+        user_object_id = ObjectId(user_id)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+
+    transactions_collection = db["transactions"]
+    users_collection = db["users"]
+
+    transactions = list(transactions_collection.find(
+        {"$or": [{"sender_id": user_object_id}, {"receiver_id": user_object_id}]}
+    ))
+
+    formatted_transactions = []
+    for txn in transactions:
+        sender_id = txn.get("sender_id")
+        receiver_id = txn.get("receiver_id")
+
+        # Check if the current user is the sender or receiver
+        is_sender = sender_id == user_object_id
+        other_party_id = receiver_id if is_sender else sender_id
+
+        # Fetch the other party's name
+        other_party = users_collection.find_one({"_id": other_party_id})
+        other_party_name = other_party["name"] if other_party else "Unknown User"
+
+        formatted_txn = {
+            "_id": str(txn["_id"]),
+            "type": "sent" if is_sender else "received",
+            "message": f"{'Sent to' if is_sender else 'Received from'} {other_party_name} ({txn.get('subcategory', 'Payment')}) on {txn.get('timestamp', datetime.now().isoformat())}",
+            "amount": txn.get("amount", 0),
+            "label": txn.get("label", "Other"),
+            "subcategory": txn.get("subcategory", "Payment"),
+            "timestamp": txn.get("timestamp", datetime.now().isoformat())
+        }
+        formatted_transactions.append(formatted_txn)
+
+    return {"transactions": formatted_transactions}
+
+@app.get("/user/{user_id}")
+def get_user(user_id: str, db: Database = Depends(get_db)):
+    try:
+        user_object_id = ObjectId(user_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+
+    users_collection = db["users"]
+    user = users_collection.find_one({"_id": user_object_id}, {"_id": 0, "name": 1, "balance": 1})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
+
+@app.get("/get-users/")
+def get_users(db: Database = Depends(get_db)):
+    users_collection = db["users"]
+    users = list(users_collection.find({}, {"_id": 0, "name": 1}))  # Fetch only the 'name' field
+    if not users:
+        raise HTTPException(status_code=404, detail="No users found")
+    return {"users": users}
+@app.post("/create-user/")
+def create_user(user: UserCreate, db: Database = Depends(get_db)):
+    users_collection = db["users"]
+    if users_collection.find_one({"name": user.name}):
+        raise HTTPException(status_code=400, detail="User already exists")
+    new_user = {
+        "name": user.name,
+        "balance": user.balance,
+        "phonenumber": user.phonenumber,
+        "pin": user.pin
+    }
+    result = users_collection.insert_one(new_user)
+    return {"message": "User created successfully", "user_id": str(result.inserted_id)}
+
+@app.post("/create-label/")
+def create_label(request: CreateLabelRequest, db: Database = Depends(get_db)):
+    labels_collection = db["labels"]
+    if labels_collection.find_one({"label": request.label}):
+        raise HTTPException(status_code=400, detail="Label already exists")
+    labels_collection.insert_one({"label": request.label})
+    return {"message": "Label created successfully"}
+@app.get("/get-labels/")
+def get_labels(db: Database = Depends(get_db)):
+    labels_collection = db["labels"]
+    labels = list(labels_collection.find({}, {"_id": 0, "label": 1, "color": 1, "subcategories": 1}))
+    if not labels:
+        raise HTTPException(status_code=404, detail="No labels found")
+    return {"labels": labels}

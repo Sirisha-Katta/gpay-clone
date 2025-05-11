@@ -1,0 +1,67 @@
+.history-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  font-family: "Poppins", sans-serif;
+}
+
+.history-container h1 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-family: "Poppins", sans-serif;
+}
+
+.history-container h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.history-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.history-container li {
+  background: #f9f9f9;
+  margin: 0.5rem 0;
+  padding: 0.8rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.history-container li.received {
+  background-color: #c8e6c9; /* Light green for sent messages */
+  color: #2e7d32; /* Dark green text */
+}
+
+.history-container li.sent {
+  background-color: #ffe0b2; /* Light orange for received messages */
+  color: #e65100; /* Dark orange text */
+}
+
+.history-container li:hover {
+  transform: scale(1.02); /* Slight zoom effect */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+}
+
+.transaction-date {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+  display: block;
+}

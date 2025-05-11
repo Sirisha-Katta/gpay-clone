@@ -1,0 +1,407 @@
+.transaction-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 50vw;
+}
+
+h1 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-family: "Poppins", sans-serif;
+}
+
+.balance-display {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.input-field {
+  width: 90%;
+  margin: 0.5rem 0;
+  padding: 0.8rem;
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-field:focus {
+  border-color: #45a049;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+/* Container for all label related elements */
+.label-container {
+  width: 90%;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column; /* Stack labels and subcategories vertically */
+  gap: 1rem; /* Add spacing between labels and subcategories */
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Add spacing between dropdown, button, input, and save button */
+  flex-wrap: wrap; /* Allow wrapping if the screen is too small */
+}
+
+.label-row .dropdown {
+  width: 200px; /* Fixed width for dropdowns */
+  padding: 0.8rem;
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: #333;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%20width%3D%224%22%20height%3D%225%22%3E%3Cpath%20fill%3D%22%234CAF50%22%20d%3D%22M2%205L0%201h4z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 0.65rem auto;
+  padding-right: 2rem; /* Add space for the dropdown symbol */
+  transition: flex-grow 0.3s ease; /* Smooth transition for size change */
+  text-overflow: ellipsis; /* Truncate text with ellipsis */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow text */
+  transition: width 0.3s ease; /* Smooth transition for width change */
+}
+
+.label-row .dropdown.shrink {
+  width: 150px; /* Reduced width when "+" button is clicked */
+}
+
+.label-row .new-input {
+  flex-grow: 1;
+  padding: 0.8rem;
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  transition: flex-grow 0.3s ease; /* Smooth transition for size change */
+  text-overflow: ellipsis; /* Truncate text with ellipsis */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow text */
+}
+
+.label-row .save-btn {
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.label-row .save-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+/* Standard dropdown container for both label and subcategory */
+.dropdown-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  flex: 2;
+}
+
+/* Apply the same styling for standalone dropdown container (subcategory) */
+.transaction-container > .dropdown-container {
+  width: 80%;
+  margin: 0.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Make parent container for subcategory same as label-container */
+.transaction-container > div:has(.dropdown-container) {
+  width: 80%;
+  margin: 0.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdown {
+  flex-grow: 1;
+  padding: 0.8rem;
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: #333;
+  outline: none;
+  cursor: pointer;
+  appearance: none; /* Remove default dropdown styling */
+  -webkit-appearance: none; /* Remove default dropdown styling for Safari */
+  -moz-appearance: none; /* Remove default dropdown styling for Firefox */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%20width%3D%224%22%20height%3D%225%22%3E%3Cpath%20fill%3D%22%234CAF50%22%20d%3D%22M2%205L0%201h4z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 0.65rem auto;
+  padding-right: 2rem; /* Add space for the dropdown symbol */
+  text-overflow: ellipsis; /* Truncate text with ellipsis */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow text */
+}
+
+.dropdown:focus {
+  border-color: #45a049;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.dropdown option {
+  background-color: white;
+  color: #333;
+  text-overflow: ellipsis; /* Truncate text with ellipsis */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow text */
+}
+
+/* Critical fix for dropdown background */
+select.dropdown option {
+  background-color: white !important;
+  color: #333 !important;
+}
+
+select.dropdown option:hover {
+  background-color: #e8f5e9 !important;
+  color: #333 !important;
+}
+
+/* Make select element behave better in different browsers */
+select.dropdown::-ms-expand {
+  display: none;
+}
+
+.add-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: #4caf50;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.add-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.1);
+}
+
+/* Make the new input container appear beside the dropdown */
+.new-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  margin: 0;
+}
+
+.new-input-container .input-field {
+  flex-grow: 1;
+  margin: 0;
+}
+
+.save-btn {
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.save-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+.send-btn {
+  width: 20%;
+  min-width: 120px;
+  margin: 1.5rem 0;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.send-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.02);
+}
+
+/* Remove default focus outlines in browsers and replace with our green style */
+button:focus, select:focus, input:focus {
+  outline: none;
+  border-color: #45a049;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+/* Firefox-specific fixes */
+@-moz-document url-prefix() {
+  .dropdown {
+    text-indent: 0.01px;
+    text-overflow: '';
+    padding-right: 1rem;
+  }
+  
+  select.dropdown option {
+    background-color: white;
+  }
+}
+
+/* For Safari and Chrome */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  select.dropdown {
+    background-color: white;
+  }
+  
+  select.dropdown option {
+    background-color: white;
+  }
+}
+
+/* Make sure subcategory form elements are properly aligned */
+.transaction-container > .new-input-container {
+  width: 80%;
+  margin: 0.5rem 0;
+}
+
+/* CSS to restructure the subcategory row */
+/* This wrapper ensures subcategory section has same layout as label section */
+.subcategory-wrapper {
+  width: 80%;
+  margin: 0.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.subcategory-row {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Add spacing between dropdown, button, and input */
+  flex-wrap: wrap; /* Allow wrapping if the screen is too small */
+}
+
+.subcategory-row .dropdown {
+  width: 200px; /* Fixed width for dropdowns */
+  padding: 0.8rem;
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: #333;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%20width%3D%224%22%20height%3D%225%22%3E%3Cpath%20fill%3D%22%234CAF50%22%20d%3D%22M2%205L0%201h4z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 0.65rem auto;
+  padding-right: 2rem; /* Add space for the dropdown symbol */
+  transition: flex-grow 0.3s ease; /* Smooth transition for size change */
+  text-overflow: ellipsis; /* Truncate text with ellipsis */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow text */
+  transition: width 0.3s ease; /* Smooth transition for width change */
+}
+
+.subcategory-row .dropdown.shrink {
+  width: 150px; /* Reduced width when "+" button is clicked */
+}
+
+.subcategory-row .new-input {
+  flex-grow: 1;
+  padding: 0.8rem;
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  transition: flex-grow 0.3s ease; /* Smooth transition for size change */
+  text-overflow: ellipsis; /* Truncate text with ellipsis */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow text */
+}
+
+.subcategory-row .save-btn {
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.subcategory-row .save-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+.suggestions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  background: #ffffff;
+  max-height: 150px;
+  overflow-y: auto;
+  position: absolute;
+  width: 250px;
+  z-index: 1000;
+}
+
+.suggestion-item {
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.suggestion-item:hover {
+  background-color: #f3f4f6;
+}

@@ -1,0 +1,25 @@
+.label-dropdown {
+  background: #fdfdfe; /* Pastel white */
+  color: #6a5acd; /* Pastel purple */
+  border: 1px solid #a3d8f4; /* Pastel blue */
+  border-radius: 5px;
+  padding: 0.5rem;
+  font-size: 1rem;
+  width: 100%;
+  cursor: pointer;
+  display: block; /* Ensure the dropdown is visible */
+}
+
+.label-dropdown option {
+  background: white; /* Ensure options have a white background */
+  color: black; /* Ensure options have black text */
+}
+
+.label-dropdown:hover {
+  border-color: #87ceeb; /* Lighter pastel blue */
+}
+
+.label-dropdown option:hover {
+  background: #ffdfba; /* Pastel orange */
+  color: #ffffff; /* White text */
+}
