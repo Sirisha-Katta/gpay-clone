@@ -12,7 +12,7 @@ function Signup() {
 
   const handleSignup = async () => {
     try {
-      const response = await axios.post("http://localhost:8000/signup/", {
+      const response = await axios.post("https://gpay-backend.onrender.com/signup/", {
         name,
         balance: parseFloat(balance),
         pin,

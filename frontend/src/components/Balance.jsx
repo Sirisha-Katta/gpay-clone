@@ -12,7 +12,7 @@ function Balance() {
           alert("User ID not found. Please log in.");
           return;
         }
-        const response = await axios.get(`http://localhost:8000/user/${userId}`);
+        const response = await axios.get(`https://gpay-backend.onrender.com/user/${userId}`);
         setBalance(response.data.balance);
       } catch (error) {
         console.error("Error fetching balance:", error);

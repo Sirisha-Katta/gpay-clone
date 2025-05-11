@@ -27,7 +27,7 @@ function App() {
       const userId = localStorage.getItem("user_id");
       if (userId) {
         try {
-          const response = await axios.get(`http://localhost:8000/user/${userId}`);
+          const response = await axios.get(`https://gpay-backend.onrender.com/user/${userId}`);
           setUserBalance(response.data.balance);
           setLoggedInUser({ name: response.data.name }); // Set logged-in user details
         } catch (error) {
@@ -126,7 +126,7 @@ function Auth({ setLoggedInUser }) {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/create-user/", {
+      const response = await axios.post("https://gpay-backend.onrender.com/create-user/", {
         ...formData,
         name: formData.name.toLowerCase(), // Convert name to lowercase
       });
@@ -152,7 +152,7 @@ function Auth({ setLoggedInUser }) {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/login/", {
+      const response = await axios.post("https://gpay-backend.onrender.com/login/", {
         name: formData.name.toLowerCase(), // Convert name to lowercase
         pin: formData.pin, // Include pin in login
       });
