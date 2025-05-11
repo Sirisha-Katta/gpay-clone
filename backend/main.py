@@ -385,3 +385,6 @@ def get_labels(db: Database = Depends(get_db)):
     if not labels:
         raise HTTPException(status_code=404, detail="No labels found")
     return {"labels": labels}
+@app.get("/")
+def read_root():
+    return {"message": "App is running!"}
