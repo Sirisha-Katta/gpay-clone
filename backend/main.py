@@ -14,10 +14,10 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://gpay-clone.vercel.app"],  # Your Vercel domain
+    allow_origins=["https://gpay-clone-9r726td8n-sirisha-kattas-projects.vercel.app"],  # Vercel frontend URL
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
 )
 
 # Temporary in-memory storage for logged-in user
