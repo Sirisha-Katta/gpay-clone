@@ -50,9 +50,15 @@ class TransactionCreate(BaseModel):
         if values.get("amount") <= 0:
             raise ValueError("Amount must be greater than zero")
         return values
-class SubcategoryCreate(BaseModel):
+class SubcategoryRequest(BaseModel):
     label: str
     name: str
+
+    @validator('label', 'name')
+    def validate_fields(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Field cannot be empty')
+        return v.strip()
 class UserCreate(BaseModel):
     name: str
     balance: float
@@ -202,67 +208,6 @@ def send_money(request: SendMoneyRequest, db: Database = Depends(get_db)):
     return {"message": "Transaction successful", "receiver_id": str(receiver_id)}
 
 
-# @app.get("/pie-chart-data/{user_id}")
-# def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
-#     try:
-#         user_object_id = ObjectId(user_id)
-        
-#         transactions_collection = db["transactions"]
-#         labels_collection = db["labels"]
-
-#         # Debug print
-#         print(f"Fetching pie chart data for user: {user_id}")
-
-#         # Check if user has transactions
-#         if not transactions_collection.find_one({"sender_id": user_object_id}):
-#             return {"data": []}
-
-#         pipeline = [
-#             {"$match": {"sender_id": user_object_id}},
-#             {"$group": {
-#                 "_id": {
-#                     "label": "$label",
-#                     "subcategory": "$subcategory"
-#                 },
-#                 "amount": {"$sum": "$amount"}
-#             }}
-#         ]
-        
-#         results = list(transactions_collection.aggregate(pipeline))
-#         print(f"Aggregation results: {results}")  # Debug print
-
-#         # Get label colors
-#         labels = list(labels_collection.find({}, {"_id": 0, "label": 1, "color": 1}))
-#         label_colors = {label["label"]: label["color"] for label in labels}
-
-#         # Format chart data with error handling
-#         chart_data = []
-#         total_amount = sum(result["amount"] for result in results)
-        
-#         for result in results:
-#             try:
-#                 label = result["_id"]["label"]
-#                 subcategory = result["_id"]["subcategory"]
-#                 amount = result["amount"]
-#                 percentage = (amount / total_amount * 100) if total_amount > 0 else 0
-                
-#                 chart_data.append({
-#                     "label": label,
-#                     "subcategory": subcategory,
-#                     "amount": amount,
-#                     "percentage": percentage,
-#                     "color": label_colors.get(label, "#CCCCCC")
-#                 })
-#             except Exception as e:
-#                 print(f"Error processing result: {e}")
-#                 continue
-
-#         return {"data": chart_data}
-
-#     except Exception as e:
-#         print(f"Error in pie chart data: {e}")
-#         raise HTTPException(status_code=500, detail=str(e))
-
 @app.get("/pie-chart-data/{user_id}")
 def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
     try:
@@ -275,17 +220,6 @@ def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
             label["label"]: label["color"]
             for label in labels.find({}, {"label": 1, "color": 1, "_id": 0})
         }
-
-        # pipeline = [
-        #     {"$match": {"sender_id": user_object_id}},
-        #     {"$group": {
-        #         "_id": {
-        #             "label": "$label",
-        #             "subcategory": {"$ifNull": ["$subcategory", "$label"]}
-        #         },
-        #         "amount": {"$sum": "$amount"}
-        #     }}
-        # ]
         pipeline = [
         {"$match": {"sender_id": user_object_id}},
         {"$group": {
@@ -450,20 +384,11 @@ def get_labels(db: Database = Depends(get_db)):
     return {"labels": labels}
 
 def generate_shade(base_color: str, index: int) -> str:
-    # Convert hex to RGB
     base_color = base_color.lstrip('#')
     rgb = tuple(int(base_color[i:i+2], 16)/255 for i in (0, 2, 4))
-    
-    # Convert to HSL for better shade generation
     h, l, s = colorsys.rgb_to_hls(*rgb)
-    
-    # Adjust lightness for shade
     new_l = max(0.2, min(0.95, l - 0.1 * index))
-    
-    # Convert back to RGB
     new_rgb = colorsys.hls_to_rgb(h, new_l, s)
-    
-    # Convert to hex
     return '#{:02x}{:02x}{:02x}'.format(
         int(new_rgb[0] * 255),
         int(new_rgb[1] * 255),
@@ -471,30 +396,26 @@ def generate_shade(base_color: str, index: int) -> str:
     )
 
 @app.post("/create-subcategory/")
-async def create_subcategory(subcategory: SubcategoryCreate, db: Database = Depends(get_db)):
+async def create_subcategory(request: SubcategoryRequest, db: Database = Depends(get_db)):
     labels_collection = db["labels"]
     
-    # Find parent label
-    label_doc = labels_collection.find_one({"label": subcategory.label})
+    label_doc = labels_collection.find_one({"label": request.label})
     if not label_doc:
         raise HTTPException(status_code=404, detail="Label not found")
     
-    # Check for duplicate subcategory
-    if any(sub["name"] == subcategory.name for sub in label_doc["subcategories"]):
+    existing_subcategories = label_doc.get("subcategories", [])
+    if any(sub["name"] == request.name for sub in existing_subcategories):
         raise HTTPException(status_code=400, detail="Subcategory already exists")
     
-    # Generate shade based on number of existing subcategories
-    new_shade = generate_shade(label_doc["color"], len(label_doc["subcategories"]))
+    new_shade = generate_shade(label_doc["color"], len(existing_subcategories))
     
-    # Create new subcategory
     new_subcategory = {
-        "name": subcategory.name,
+        "name": request.name,
         "color": new_shade
     }
     
-    # Update label document
     result = labels_collection.update_one(
-        {"label": subcategory.label},
+        {"label": request.label},
         {"$push": {"subcategories": new_subcategory}}
     )
     
@@ -502,9 +423,6 @@ async def create_subcategory(subcategory: SubcategoryCreate, db: Database = Depe
         raise HTTPException(status_code=500, detail="Failed to add subcategory")
     
     return {
-        "message": "Subcategory added successfully",
-        "subcategory": new_subcategory
+        "status": "success",
+        "data": new_subcategory
     }
-
-
-
