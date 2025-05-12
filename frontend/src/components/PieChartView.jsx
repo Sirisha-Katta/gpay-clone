@@ -659,7 +659,7 @@ const PieChartView = () => {
         throw new Error("No user ID found in localStorage.");
       }
 
-      const response = await axios.get(`http://127.0.0.1:8000/pie-chart-data/${userId}`);
+      const response = await axios.get(`https://gpay-clone.onrender.com/pie-chart-data/${userId}`);
       console.log("Pie chart API Response:", response.data);
 
       if (response.data && Array.isArray(response.data.data)) {
