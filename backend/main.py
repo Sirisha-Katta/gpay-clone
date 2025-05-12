@@ -11,6 +11,7 @@ from bson import ObjectId
 from pydantic import BaseModel, validator
 from typing import List, Optional
 import random
+import colorsys
 app = FastAPI()
 
 # Add CORS middleware
@@ -49,7 +50,9 @@ class TransactionCreate(BaseModel):
         if values.get("amount") <= 0:
             raise ValueError("Amount must be greater than zero")
         return values
-
+class SubcategoryCreate(BaseModel):
+    label: str
+    name: str
 class UserCreate(BaseModel):
     name: str
     balance: float
@@ -445,6 +448,63 @@ def get_labels(db: Database = Depends(get_db)):
     if not labels:
         raise HTTPException(status_code=404, detail="No labels found")
     return {"labels": labels}
+
+def generate_shade(base_color: str, index: int) -> str:
+    # Convert hex to RGB
+    base_color = base_color.lstrip('#')
+    rgb = tuple(int(base_color[i:i+2], 16)/255 for i in (0, 2, 4))
+    
+    # Convert to HSL for better shade generation
+    h, l, s = colorsys.rgb_to_hls(*rgb)
+    
+    # Adjust lightness for shade
+    new_l = max(0.2, min(0.95, l - 0.1 * index))
+    
+    # Convert back to RGB
+    new_rgb = colorsys.hls_to_rgb(h, new_l, s)
+    
+    # Convert to hex
+    return '#{:02x}{:02x}{:02x}'.format(
+        int(new_rgb[0] * 255),
+        int(new_rgb[1] * 255),
+        int(new_rgb[2] * 255)
+    )
+
+@app.post("/create-subcategory")
+async def create_subcategory(subcategory: SubcategoryCreate, db: Database = Depends(get_db)):
+    labels_collection = db["labels"]
+    
+    # Find parent label
+    label_doc = labels_collection.find_one({"label": subcategory.label})
+    if not label_doc:
+        raise HTTPException(status_code=404, detail="Label not found")
+    
+    # Check for duplicate subcategory
+    if any(sub["name"] == subcategory.name for sub in label_doc["subcategories"]):
+        raise HTTPException(status_code=400, detail="Subcategory already exists")
+    
+    # Generate shade based on number of existing subcategories
+    new_shade = generate_shade(label_doc["color"], len(label_doc["subcategories"]))
+    
+    # Create new subcategory
+    new_subcategory = {
+        "name": subcategory.name,
+        "color": new_shade
+    }
+    
+    # Update label document
+    result = labels_collection.update_one(
+        {"label": subcategory.label},
+        {"$push": {"subcategories": new_subcategory}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to add subcategory")
+    
+    return {
+        "message": "Subcategory added successfully",
+        "subcategory": new_subcategory
+    }
 
 
 

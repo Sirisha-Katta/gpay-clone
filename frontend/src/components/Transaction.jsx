@@ -142,7 +142,7 @@ function Transaction() {
     }
 
     try {
-      const response = await axios.post("https://gpay-clone.onrender.com/create-label/", {
+      const response = await axios.post("https://gpay-clone.onrender.com/create-subcategory/", {
         label: label.charAt(0).toUpperCase() + label.slice(1), // Capitalize first letter
         subcategories: [newSubcategory.charAt(0).toUpperCase() + newSubcategory.slice(1)], // Capitalize first letter
       });
