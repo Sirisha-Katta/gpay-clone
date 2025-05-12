@@ -8,7 +8,9 @@ from bson.errors import InvalidId
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from bson import ObjectId
-
+from pydantic import BaseModel, validator
+from typing import List, Optional
+import random
 app = FastAPI()
 
 # Add CORS middleware
@@ -23,7 +25,18 @@ app.add_middleware(
 
 # Temporary in-memory storage for logged-in user
 logged_in_user = {"user_id": None}
+class LabelCreate(BaseModel):
+    label: str
+    color: Optional[str] = None
+    subcategories: List[dict] = []
 
+    @validator('label')
+    def validate_label(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Label cannot be empty')
+        if len(v) > 50:
+            raise ValueError('Label too long')
+        return v.strip().title()
 class TransactionCreate(BaseModel):
     sender_id: str  # Use str because MongoDB ObjectIds are strings
     receiver_id: str
@@ -377,14 +390,54 @@ def create_user(user: UserCreate, db: Database = Depends(get_db)):
     }
     result = users_collection.insert_one(new_user)
     return {"message": "User created successfully", "user_id": str(result.inserted_id)}
-
-@app.post("/create-label/")
-def create_label(request: CreateLabelRequest, db: Database = Depends(get_db)):
+def generate_random_color(db: Database) -> str:
     labels_collection = db["labels"]
-    if labels_collection.find_one({"label": request.label}):
+    used_colors = set(label.get("color") for label in labels_collection.find({}, {"color": 1}))
+    
+    def get_random_color():
+        # Generate pastel colors for better visibility
+        r = random.randint(180, 255)
+        g = random.randint(180, 255)
+        b = random.randint(180, 255)
+        return f"#{r:02x}{g:02x}{b:02x}"
+    
+    # Try to generate unique color (max 50 attempts)
+    for _ in range(50):
+        color = get_random_color()
+        if color not in used_colors:
+            return color
+            
+    raise HTTPException(status_code=500, detail="Could not generate unique color")
+
+@app.post("/create-label")
+async def create_label(label: LabelCreate, db: Database = Depends(get_db)):
+    labels_collection = db["labels"]
+    
+    if labels_collection.find_one({"label": label.label}):
         raise HTTPException(status_code=400, detail="Label already exists")
-    labels_collection.insert_one({"label": request.label})
-    return {"message": "Label created successfully"}
+    
+    # Generate unique color
+    color = generate_random_color(db)
+    
+    label_dict = {
+        "label": label.label,
+        "color": color,
+        "subcategories": []
+    }
+    
+    result = labels_collection.insert_one(label_dict)
+    return {
+        "message": "Label created successfully", 
+        "id": str(result.inserted_id),
+        "color": color
+    }
+# @app.post("/create-label/")
+# def create_label(request: CreateLabelRequest, db: Database = Depends(get_db)):
+#     labels_collection = db["labels"]
+#     if labels_collection.find_one({"label": request.label}):
+#         raise HTTPException(status_code=400, detail="Label already exists")
+#     labels_collection.insert_one({"label": request.label})
+#     return {"message": "Label created successfully"}
 @app.get("/get-labels/")
 def get_labels(db: Database = Depends(get_db)):
     labels_collection = db["labels"]
