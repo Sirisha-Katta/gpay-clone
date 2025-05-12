@@ -14,7 +14,14 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://gpay-clone-9r726td8n-sirisha-kattas-projects.vercel.app"],  # Vercel frontend URL
+    # allow_origins=["https://gpay-clone-9r726td8n-sirisha-kattas-projects.vercel.app"],  # Vercel frontend URL
+    allow_origins=["*"],  # Allow all origins for development
+    allow_origin_regex="https?://.*",  # Allow all origins for development
+    # allow_origin_regex="https://.*\.vercel\.app",  # Allow all Vercel subdomains
+    # allow_origin_regex="https://.*\.github\.io",  # Allow all GitHub Pages subdomains
+    allow_origin_regex="https://.*\.githubusercontent\.com",  # Allow all GitHub Pages subdomains
+    allow_origin_regex="https://.*\.netlify\.app",  # Allow all Netlify subdomains
+    allow_origin_regex="https://.*\.firebaseapp\.com",  # Allow all Firebase subdomains
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
