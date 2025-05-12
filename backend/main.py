@@ -412,7 +412,7 @@ def generate_random_color(db: Database) -> str:
             
     raise HTTPException(status_code=500, detail="Could not generate unique color")
 
-@app.post("/create-label")
+@app.post("/create-label/")
 async def create_label(label: LabelCreate, db: Database = Depends(get_db)):
     labels_collection = db["labels"]
     
@@ -470,7 +470,7 @@ def generate_shade(base_color: str, index: int) -> str:
         int(new_rgb[2] * 255)
     )
 
-@app.post("/create-subcategory")
+@app.post("/create-subcategory/")
 async def create_subcategory(subcategory: SubcategoryCreate, db: Database = Depends(get_db)):
     labels_collection = db["labels"]
     
