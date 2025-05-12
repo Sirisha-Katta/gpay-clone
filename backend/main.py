@@ -389,3 +389,8 @@ def get_labels(db: Database = Depends(get_db)):
 @app.get("/")
 def read_root():
     return {"message": "App is running!"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+

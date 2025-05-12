@@ -8,7 +8,7 @@ function LabelsDropdown() {
   useEffect(() => {
     const fetchLabels = async () => {
       try {
-        const response = await axios.get("https://gpay-backend.onrender.com/get-labels/");
+        const response = await axios.get("https://gpay-clone.onrender.com/get-labels/");
         console.log("Fetched Labels:", response.data.labels); // Debugging log
         setLabels(response.data.labels); // Set labels in state
       } catch (error) {

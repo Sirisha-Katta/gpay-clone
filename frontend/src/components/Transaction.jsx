@@ -23,7 +23,7 @@ function Transaction() {
       const userId = localStorage.getItem("user_id");
       if (userId) {
         try {
-          const response = await axios.get(`https://gpay-backend.onrender.com/user/${userId}`);
+          const response = await axios.get(`https://gpay-clone.onrender.com/user/${userId}`);
           setUserBalance(response.data.balance);
         } catch (error) {
           toast.error("Error fetching user balance."); // Show error toast
@@ -36,7 +36,7 @@ function Transaction() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("https://gpay-backend.onrender.com/get-users/");
+        const response = await axios.get("https://gpay-clone.onrender.com/get-users/");
         console.log("Fetched Users:", response.data.users); // Debugging log
         setAllUsers(response.data.users.map((user) => user.name)); // Extract usernames
       } catch (error) {
@@ -50,7 +50,7 @@ function Transaction() {
   // Fetch labels and subcategories
   const fetchLabels = async () => {
     try {
-      const response = await axios.get("https://gpay-backend.onrender.com/get-labels/");
+      const response = await axios.get("https://gpay-clone.onrender.com/get-labels/");
       if (response.data.labels && response.data.labels.length > 0) {
         console.log("Fetched Labels:", response.data.labels); // Debugging log
         setLabels(response.data.labels); // Set labels with subcategories and colors
@@ -95,7 +95,7 @@ function Transaction() {
 
     try {
       const currentTimestamp = new Date().toISOString().replace("T", " ").split(".")[0];
-      const response = await axios.post("https://gpay-backend.onrender.com/send-money/", {
+      const response = await axios.post("https://gpay-clone.onrender.com/send-money/", {
         receiver_name: receiver.charAt(0).toUpperCase() + receiver.slice(1), // Capitalize first letter
         amount: parseFloat(amount),
         label: label.charAt(0).toUpperCase() + label.slice(1), // Capitalize first letter
@@ -108,7 +108,7 @@ function Transaction() {
         { message: response.data.message, amount, label, subcategory, timestamp: currentTimestamp },
       ]);
       const userId = localStorage.getItem("user_id");
-      const balanceResponse = await axios.get(`https://gpay-backend.onrender.com/user/${userId}`);
+      const balanceResponse = await axios.get(`https://gpay-clone.onrender.com/user/${userId}`);
       setUserBalance(balanceResponse.data.balance);
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error sending money."); // Show error toast
@@ -122,7 +122,7 @@ function Transaction() {
     }
 
     try {
-      const response = await axios.post("https://gpay-backend.onrender.com/create-label/", {
+      const response = await axios.post("https://gpay-clone.onrender.com/create-label/", {
         label: newLabel.charAt(0).toUpperCase() + newLabel.slice(1), // Capitalize first letter
         subcategories: [],
       });
@@ -142,7 +142,7 @@ function Transaction() {
     }
 
     try {
-      const response = await axios.post("https://gpay-backend.onrender.com/create-label/", {
+      const response = await axios.post("https://gpay-clone.onrender.com/create-label/", {
         label: label.charAt(0).toUpperCase() + label.slice(1), // Capitalize first letter
         subcategories: [newSubcategory.charAt(0).toUpperCase() + newSubcategory.slice(1)], // Capitalize first letter
       });

@@ -9,7 +9,7 @@ function CreateUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("https://gpay-backend.onrender.com/create-user/", {
+      const response = await axios.post("https://gpay-clone.onrender.com/create-user/", {
         name,
         balance: parseFloat(balance),
       });

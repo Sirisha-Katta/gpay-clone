@@ -19,7 +19,7 @@ const Report = () => {
       const userId = localStorage.getItem("user_id");
       if (userId) {
         try {
-          const response = await axios.get(`https://gpay-backend.onrender.com/user/${userId}/transactions`);
+          const response = await axios.get(`https://gpay-clone.onrender.com/user/${userId}/transactions`);
           setTransactions(response.data.transactions);
 
           const income = response.data.transactions
@@ -39,7 +39,7 @@ const Report = () => {
 
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("https://gpay-backend.onrender.com/get-labels/");
+        const response = await axios.get("https://gpay-clone.onrender.com/get-labels/");
         const categoryLabels = response.data.labels.map((label) => label.label);
         setCategories(categoryLabels); // Set categories from the backend
       } catch (error) {
@@ -51,7 +51,7 @@ const Report = () => {
       const userId = localStorage.getItem("user_id");
       if (userId) {
         try {
-          const response = await axios.get(`https://gpay-backend.onrender.com/user/${userId}/preferences`);
+          const response = await axios.get(`https://gpay-clone.onrender.com/user/${userId}/preferences`);
           if (response.data.preferences) {
             setSavedDetails(response.data.preferences);
             setIncome(response.data.preferences.income);
@@ -77,7 +77,7 @@ const Report = () => {
     const userId = localStorage.getItem("user_id");
     if (userId) {
       try {
-        const response = await axios.post(`https://gpay-backend.onrender.com/user/${userId}/preferences`, {
+        const response = await axios.post(`https://gpay-clone.onrender.com/user/${userId}/preferences`, {
           income,
           preferences,
         });
@@ -101,7 +101,7 @@ const Report = () => {
     setIsLoading(true);
     setGeneratedPlan(null);
     try {
-      const response = await axios.post("https://gpay-backend.onrender.com/generate-plan", {
+      const response = await axios.post("https://gpay-clone.onrender.com/generate-plan", {
         income: savedDetails.income,
         preferences: savedDetails.preferences,
       });

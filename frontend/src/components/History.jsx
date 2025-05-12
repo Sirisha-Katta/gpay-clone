@@ -9,7 +9,7 @@ function History() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axios.get(`https://gpay-backend.onrender.com/transactions/${userId}`);
+        const response = await axios.get(`https://gpay-clone.onrender.com/transactions/${userId}`);
         console.log("API Response:", response.data); // Debugging log
 
         if (response.data.transactions) {
