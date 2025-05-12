@@ -17,14 +17,14 @@ function App() {
 
   const handleLogout = () => {
     setLoggedInUser(null);
-    localStorage.removeItem("user_id");
+    sessionStorage.removeItem("user_id");
     toast.info("Logged out successfully."); // Show info toast
     navigate("/auth");
   };
 
   useEffect(() => {
     const fetchUserBalance = async () => {
-      const userId = localStorage.getItem("user_id");
+      const userId = sessionStorage.getItem("user_id");
       if (userId) {
         try {
           const response = await axios.get(`https://gpay-clone.onrender.com/user/${userId}`);
@@ -157,7 +157,7 @@ function Auth({ setLoggedInUser }) {
         pin: formData.pin, // Include pin in login
       });
       toast.success(response.data.message); // Show success toast
-      localStorage.setItem("user_id", response.data.user_id);
+      sessionStorage.setItem("user_id", response.data.user_id);
       setLoggedInUser({ name: formData.name });
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error logging in"); // Show error toast

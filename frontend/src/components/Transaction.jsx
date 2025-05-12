@@ -20,7 +20,7 @@ function Transaction() {
 
   useEffect(() => {
     const fetchUserBalance = async () => {
-      const userId = localStorage.getItem("user_id");
+      const userId = sessionStorage.getItem("user_id");
       if (userId) {
         try {
           const response = await axios.get(`https://gpay-clone.onrender.com/user/${userId}`);
@@ -107,7 +107,7 @@ function Transaction() {
         ...prevHistory,
         { message: response.data.message, amount, label, subcategory, timestamp: currentTimestamp },
       ]);
-      const userId = localStorage.getItem("user_id");
+      const userId = sessionStorage.getItem("user_id");
       const balanceResponse = await axios.get(`https://gpay-clone.onrender.com/user/${userId}`);
       setUserBalance(balanceResponse.data.balance);
     } catch (error) {

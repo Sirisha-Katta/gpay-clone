@@ -16,7 +16,7 @@ const Report = () => {
 
   useEffect(() => {
     const fetchReportData = async () => {
-      const userId = localStorage.getItem("user_id");
+      const userId = sessionStorage.getItem("user_id");
       if (userId) {
         try {
           const response = await axios.get(`https://gpay-clone.onrender.com/user/${userId}/transactions`);
@@ -48,7 +48,7 @@ const Report = () => {
     };
 
     const fetchSavedDetails = async () => {
-      const userId = localStorage.getItem("user_id");
+      const userId = sessionStorage.getItem("user_id");
       if (userId) {
         try {
           const response = await axios.get(`https://gpay-clone.onrender.com/user/${userId}/preferences`);
@@ -74,7 +74,7 @@ const Report = () => {
       return;
     }
 
-    const userId = localStorage.getItem("user_id");
+    const userId = sessionStorage.getItem("user_id");
     if (userId) {
       try {
         const response = await axios.post(`https://gpay-clone.onrender.com/user/${userId}/preferences`, {

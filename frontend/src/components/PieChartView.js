@@ -8,9 +8,9 @@ function PieChartView() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userId = localStorage.getItem("user_id");
+        const userId = sessionStorage.getItem("user_id");
         if (!userId) {
-          console.error("No user ID found in localStorage.");
+          console.error("No user ID found in sessionStorage.");
           return;
         }
 

@@ -4,7 +4,7 @@ import "./History.css";
 
 function History() {
   const [transactions, setTransactions] = useState([]); // Initialize as an empty array
-  const userId = localStorage.getItem("user_id");
+  const userId = sessionStorage.getItem("user_id");
 
   useEffect(() => {
     const fetchTransactions = async () => {

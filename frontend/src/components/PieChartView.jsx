@@ -13,9 +13,9 @@
 
 //   const fetchData = useCallback(async () => {
 //     try {
-//       const userId = localStorage.getItem("user_id");
+//       const userId = sessionStorage.getItem("user_id");
 //       if (!userId) {
-//         throw new Error("No user ID found in localStorage.");
+//         throw new Error("No user ID found in sessionStorage.");
 //       }
 
 //       const response = await axios.get(`http://127.0.0.1:8000/pie-chart-data/${userId}`);
@@ -333,9 +333,9 @@
 
 //   const fetchData = useCallback(async () => {
 //     try {
-//       const userId = localStorage.getItem("user_id");
+//       const userId = sessionStorage.getItem("user_id");
 //       if (!userId) {
-//         throw new Error("No user ID found in localStorage.");
+//         throw new Error("No user ID found in sessionStorage.");
 //       }
 
 //       const response = await axios.get(`http://127.0.0.1:8000/pie-chart-data/${userId}`);
@@ -654,9 +654,9 @@ const PieChartView = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const userId = localStorage.getItem("user_id");
+      const userId = sessionStorage.getItem("user_id");
       if (!userId) {
-        throw new Error("No user ID found in localStorage.");
+        throw new Error("No user ID found in sessionStorage.");
       }
 
       const response = await axios.get(`https://gpay-clone.onrender.com/pie-chart-data/${userId}`);

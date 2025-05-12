@@ -7,7 +7,7 @@ function Balance() {
   useEffect(() => {
     const fetchBalance = async () => {
       try {
-        const userId = localStorage.getItem("user_id");
+        const userId = sessionStorage.getItem("user_id");
         if (!userId) {
           alert("User ID not found. Please log in.");
           return;

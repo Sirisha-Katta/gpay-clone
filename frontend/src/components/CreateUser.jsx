@@ -14,7 +14,7 @@ function CreateUser() {
         balance: parseFloat(balance),
       });
       toast.success(response.data.message);
-      localStorage.setItem("user_id", response.data.user_id); // Store user_id
+      sessionStorage.setItem("user_id", response.data.user_id); // Store user_id
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.detail || "Error creating user");
