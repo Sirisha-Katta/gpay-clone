@@ -69,7 +69,13 @@ class Preferences(BaseModel):  # Add the colon here
 class PreferencesRequest(BaseModel):
     income: float
     preferences: List[str]
+@app.get("/")
+def read_root():
+    return {"message": "GPay Backend is running"}
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 @app.post("/user/{user_id}/preferences")
 def save_preferences(user_id: str, request: PreferencesRequest, db: Database = Depends(get_db)):
     try:
@@ -386,11 +392,6 @@ def get_labels(db: Database = Depends(get_db)):
     if not labels:
         raise HTTPException(status_code=404, detail="No labels found")
     return {"labels": labels}
-@app.get("/")
-def read_root():
-    return {"message": "App is running!"}
 
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
+
 
