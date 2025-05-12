@@ -8,7 +8,7 @@ from bson.errors import InvalidId
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from bson import ObjectId
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator,field_validator
 from typing import List, Optional
 import random
 import colorsys
@@ -54,8 +54,9 @@ class SubcategoryRequest(BaseModel):
     label: str
     name: str
 
-    @validator('label', 'name')
-    def validate_fields(cls, v):
+    @field_validator('label', 'name')
+    @classmethod
+    def validate_fields(cls, v: str) -> str:
         if not v or not v.strip():
             raise ValueError('Field cannot be empty')
         return v.strip()
@@ -395,7 +396,7 @@ def generate_shade(base_color: str, index: int) -> str:
         int(new_rgb[2] * 255)
     )
 
-@app.post("/create-subcategory/")
+@app.post("/create-subcategory", response_model=dict)
 async def create_subcategory(request: SubcategoryRequest, db: Database = Depends(get_db)):
     labels_collection = db["labels"]
     

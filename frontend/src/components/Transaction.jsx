@@ -135,25 +135,49 @@ function Transaction() {
     }
   };
 
+  // const handleAddSubcategory = async () => {
+  //   if (!newSubcategory || !label) {
+  //     toast.warn("Please select a label and enter a subcategory name."); // Show warning toast
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await axios.post("https://gpay-clone.onrender.com/create-subcategory/", {
+  //       label: label.charAt(0).toUpperCase() + label.slice(1), // Capitalize first letter
+  //       subcategories: [newSubcategory.charAt(0).toUpperCase() + newSubcategory.slice(1)], // Capitalize first letter
+  //     });
+  //     toast.success(response.data.message); // Show success toast
+  //     await fetchLabels(); // Fetch the latest labels after saving
+  //     setNewSubcategory("");
+  //     setShowNewSubcategoryInput(false);
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.detail || "Error adding subcategory"); // Show error toast
+  //   }
+  // };
   const handleAddSubcategory = async () => {
     if (!newSubcategory || !label) {
-      toast.warn("Please select a label and enter a subcategory name."); // Show warning toast
-      return;
+        toast.warn("Please select a label and enter a subcategory name.");
+        return;
     }
 
     try {
-      const response = await axios.post("https://gpay-clone.onrender.com/create-subcategory/", {
-        label: label.charAt(0).toUpperCase() + label.slice(1), // Capitalize first letter
-        subcategories: [newSubcategory.charAt(0).toUpperCase() + newSubcategory.slice(1)], // Capitalize first letter
-      });
-      toast.success(response.data.message); // Show success toast
-      await fetchLabels(); // Fetch the latest labels after saving
-      setNewSubcategory("");
-      setShowNewSubcategoryInput(false);
+        const response = await axios.post("https://gpay-clone.onrender.com/create-subcategory", {
+            label: label.charAt(0).toUpperCase() + label.slice(1),
+            name: newSubcategory.charAt(0).toUpperCase() + newSubcategory.slice(1)
+        });
+
+        if (response.data.status === "success") {
+            toast.success("Subcategory added successfully");
+            await fetchLabels();
+            setNewSubcategory("");
+            setShowNewSubcategoryInput(false);
+        }
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error adding subcategory"); // Show error toast
+        const errorMessage = error.response?.data?.detail || "Error adding subcategory";
+        toast.error(errorMessage);
+        console.error("Error adding subcategory:", error);
     }
-  };
+};
 
   return (
     <div className="transaction-container">
