@@ -412,6 +412,10 @@ button:focus, select:focus, input:focus {
   .label-row .dropdown {
     width: 150px; /* Fixed width for dropdowns */
   }
+  .subcategory-row .dropdown {
+    width: 150px; /* Fixed width for dropdowns */
+  }
+  
   .suggestions-list {
     width: 100%;
     max-width: 300px;
