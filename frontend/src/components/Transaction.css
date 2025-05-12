@@ -409,6 +409,9 @@ button:focus, select:focus, input:focus {
 
 /* Mobile Responsive Styles */
 @media screen and (max-width: 768px) {
+  .label-row .dropdown {
+    width: 150px; /* Fixed width for dropdowns */
+  }
   .suggestions-list {
     width: 100%;
     max-width: 300px;
