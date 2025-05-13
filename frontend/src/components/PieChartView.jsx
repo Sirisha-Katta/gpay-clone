@@ -329,152 +329,76 @@ const PieChartView = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const [tooltipContent, setTooltipContent] = useState(null);
 
-  // const fetchData = useCallback(async () => {
-  //   try {
-  //     const userId = sessionStorage.getItem("user_id");
-  //     if (!userId) {
-  //       throw new Error("No user ID found in sessionStorage.");
-  //     }
-
-  //     const response = await axios.get(`https://gpay-clone.onrender.com/pie-chart-data/${userId}`);
-  //     console.log("Pie chart API Response:", response.data);
-
-  //     if (response.data && Array.isArray(response.data.data)) {
-  //       const totalAmount = response.data.data.reduce((sum, item) => sum + item.amount, 0);
-
-  //       // Group data by domain and generate shades for subcategories
-  //       const groupedData = response.data.data.reduce((acc, item) => {
-  //         const { label, subcategory, amount, color } = item;
-
-  //         if (!acc[label]) {
-  //           acc[label] = { baseColor: color, subcategories: [], total: 0 };
-  //         }
-  //         acc[label].subcategories.push({ subcategory, amount });
-  //         acc[label].total = (acc[label].total || 0) + amount;
-  //         return acc;
-  //       }, {});
-        
-  //       const legendItems = Object.entries(groupedData).map(([domain, data]) => ({
-  //         name: domain,
-  //         color: data.baseColor,
-  //         value: `${domain} (${((data.total / totalAmount) * 100).toFixed(1)}%)`,
-  //         total: data.total
-  //       }));
-  //       setLegendData(legendItems);
-        
-  //       const formattedData = [];
-  //       const generateShade = (baseColor, index, total) => {
-  //         const factor = 1 - (index / (total + 1)) * 0.3; // Reduce brightness by up to 30%
-  //         const [r, g, b] = baseColor.match(/\w\w/g).map((hex) => parseInt(hex, 16));
-  //         return `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
-  //       };
-
-  //       Object.entries(groupedData).forEach(([domain, { baseColor, subcategories }]) => {
-  //         subcategories.sort((a, b) => a.subcategory.localeCompare(b.subcategory)); // Sort subcategories alphabetically
-  //         subcategories.forEach((sub, index) => {
-  //           formattedData.push({
-  //             name: sub.subcategory,
-  //             value: sub.amount,
-  //             percentage: ((sub.amount / totalAmount) * 100).toFixed(1) + "%",
-  //             color: generateShade(baseColor, index, subcategories.length),
-  //             mainCategory: domain,
-  //           });
-  //         });
-  //       });
-
-  //       console.log("Formatted Data:", formattedData);
-  //       setData(formattedData);
-  //     } else {
-  //       setData([]);
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching data:", err);
-  //     setError(err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   fetchData();
-  // }, [fetchData]);
   const fetchData = useCallback(async () => {
     try {
       const userId = sessionStorage.getItem("user_id");
-      if (!userId) throw new Error("No user ID found");
-  
-      const response = await axios.get(`https://gpay-clone.onrender.com/pie-chart-data/${userId}`);
-      console.log("API Response:", response.data);
-  
-      if (!response.data?.data?.length) {
-        setData([]);
-        setLegendData([]);
-        return;
+      if (!userId) {
+        throw new Error("No user ID found in sessionStorage.");
       }
-  
-      // Calculate total amount
-      const totalAmount = response.data.data.reduce((sum, item) => sum + item.amount, 0);
-  
-      // Group by main category
-      const groupedData = response.data.data.reduce((acc, item) => {
-        const { label, subcategory, amount, color } = item;
+
+      const response = await axios.get(`https://gpay-clone.onrender.com/pie-chart-data/${userId}`);
+      console.log("Pie chart API Response:", response.data);
+
+      if (response.data && Array.isArray(response.data.data)) {
+        const totalAmount = response.data.data.reduce((sum, item) => sum + item.amount, 0);
+
+        // Group data by domain and generate shades for subcategories
+        const groupedData = response.data.data.reduce((acc, item) => {
+          const { label, subcategory, amount, color } = item;
+
+          if (!acc[label]) {
+            acc[label] = { baseColor: color, subcategories: [], total: 0 };
+          }
+          acc[label].subcategories.push({ subcategory, amount });
+          acc[label].total = (acc[label].total || 0) + amount;
+          return acc;
+        }, {});
         
-        if (!acc[label]) {
-          acc[label] = {
-            baseColor: color,
-            subcategories: [],
-            total: 0
-          };
-        }
-  
-        // Add subcategory with inherited color shade
-        acc[label].subcategories.push({
-          name: subcategory || label,
-          amount,
-          color: color
+        const legendItems = Object.entries(groupedData).map(([domain, data]) => ({
+          name: domain,
+          color: data.baseColor,
+          value: `${domain} (${((data.total / totalAmount) * 100).toFixed(1)}%)`,
+          total: data.total
+        }));
+        setLegendData(legendItems);
+        
+        const formattedData = [];
+        const generateShade = (baseColor, index, total) => {
+          const factor = 1 - (index / (total + 1)) * 0.3; // Reduce brightness by up to 30%
+          const [r, g, b] = baseColor.match(/\w\w/g).map((hex) => parseInt(hex, 16));
+          return `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
+        };
+
+        Object.entries(groupedData).forEach(([domain, { baseColor, subcategories }]) => {
+          subcategories.sort((a, b) => a.subcategory.localeCompare(b.subcategory)); // Sort subcategories alphabetically
+          subcategories.forEach((sub, index) => {
+            formattedData.push({
+              name: sub.subcategory,
+              value: sub.amount,
+              percentage: ((sub.amount / totalAmount) * 100).toFixed(1) + "%",
+              color: generateShade(baseColor, index, subcategories.length),
+              mainCategory: domain,
+            });
+          });
         });
-        acc[label].total += amount;
-        
-        return acc;
-      }, {});
-  
-      // Create legend data
-      const legendItems = Object.entries(groupedData).map(([label, data]) => ({
-        name: label,
-        color: data.baseColor,
-        value: `${label} (${((data.total / totalAmount) * 100).toFixed(1)}%)`,
-        total: data.total
-      }));
-      setLegendData(legendItems);
-  
-      // Format final data with subcategories
-      const formattedData = Object.entries(groupedData).flatMap(([label, data]) => {
-        return data.subcategories
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map((sub, index) => ({
-            name: sub.name,
-            value: sub.amount,
-            percentage: ((sub.amount / totalAmount) * 100).toFixed(1) + "%",
-            color: sub.color,
-            mainCategory: label
-          }));
-      });
-  
-      console.log("Formatted:", formattedData);
-      setData(formattedData);
-  
+
+        console.log("Formatted Data:", formattedData);
+        setData(formattedData);
+      } else {
+        setData([]);
+      }
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error fetching data:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   }, []);
-  
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-  
+
   // Handle pie slice hover/click
   const onPieEnter = (_, index) => {
     setActiveIndex(index);

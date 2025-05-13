@@ -209,46 +209,63 @@ def send_money(request: SendMoneyRequest, db: Database = Depends(get_db)):
     return {"message": "Transaction successful", "receiver_id": str(receiver_id)}
 
 @app.get("/pie-chart-data/{user_id}")
-def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
+async def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
     try:
+        # Get all labels with their structure
+        labels_collection = db["labels"]
+        labels_data = list(labels_collection.find({}, {"_id": 0}))
+        
+        # Convert user_id and get transactions
         user_object_id = ObjectId(user_id)
         transactions = db["transactions"]
-        labels = db["labels"]
-
-        # First get all labels with colors
-        label_colors = {
-            label["label"]: label["color"]
-            for label in labels.find({}, {"label": 1, "color": 1, "_id": 0})
-        }
-
+        
+        # Aggregate transactions
         pipeline = [
-            {"$match": {"sender_id": user_object_id}},
-            {"$group": {
-                "_id": {
-                    "label": "$label",
-                    "subcategory": "$subcategory"
-                },
-                "amount": {"$sum": "$amount"}
-            }}
-        ]
-
-        results = list(transactions.aggregate(pipeline))
-        total = sum(r["amount"] for r in results)
-
-        chart_data = []
-        for r in results:
-            label = r["_id"]["label"]
-            if label in label_colors:
-                data = {
-                    "label": label,
-                    "subcategory": r["_id"]["subcategory"] or label,
-                    "amount": r["amount"],
-                    "percentage": round((r["amount"] / total * 100), 2),
-                    "color": label_colors[label]
+            {
+                "$match": {"sender_id": user_object_id}
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "label": "$label",
+                        "subcategory": "$subcategory"
+                    },
+                    "amount": {"$sum": "$amount"}
                 }
-                chart_data.append(data)
-
-        return {"data": chart_data}
+            }
+        ]
+        
+        transaction_data = list(transactions.aggregate(pipeline))
+        
+        # Process and merge data
+        total_amount = sum(t["amount"] for t in transaction_data)
+        
+        for label in labels_data:
+            label_transactions = [
+                t for t in transaction_data 
+                if t["_id"]["label"] == label["label"]
+            ]
+            
+            # Calculate total for label
+            label_total = sum(t["amount"] for t in label_transactions)
+            label["amount"] = label_total
+            label["percentage"] = f"{(label_total/total_amount * 100):.1f}%"
+            
+            # Process subcategories
+            for sub in label.get("subcategories", []):
+                sub_trans = next(
+                    (t for t in label_transactions 
+                     if t["_id"]["subcategory"] == sub["name"]), 
+                    None
+                )
+                if sub_trans:
+                    sub["amount"] = sub_trans["amount"]
+                    sub["percentage"] = f"{(sub_trans['amount']/total_amount * 100):.1f}%"
+                else:
+                    sub["amount"] = 0
+                    sub["percentage"] = "0%"
+        
+        return {"data": labels_data}
 
     except Exception as e:
         print(f"Error in pie chart data: {e}")
