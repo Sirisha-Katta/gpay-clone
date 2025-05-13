@@ -208,7 +208,6 @@ def send_money(request: SendMoneyRequest, db: Database = Depends(get_db)):
 
     return {"message": "Transaction successful", "receiver_id": str(receiver_id)}
 
-
 @app.get("/pie-chart-data/{user_id}")
 def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
     try:
@@ -216,20 +215,21 @@ def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
         transactions = db["transactions"]
         labels = db["labels"]
 
-        # Get all labels with colors first
+        # First get all labels with colors
         label_colors = {
             label["label"]: label["color"]
             for label in labels.find({}, {"label": 1, "color": 1, "_id": 0})
         }
+
         pipeline = [
-        {"$match": {"sender_id": user_object_id}},
-        {"$group": {
-            "_id": {
-            "label": "$label",
-            "subcategory": {"$ifNull": ["$subcategory", "Other"]}  # Change default to "Other" or something else
-            },
-            "amount": {"$sum": "$amount"}
-        }}
+            {"$match": {"sender_id": user_object_id}},
+            {"$group": {
+                "_id": {
+                    "label": "$label",
+                    "subcategory": "$subcategory"
+                },
+                "amount": {"$sum": "$amount"}
+            }}
         ]
 
         results = list(transactions.aggregate(pipeline))
@@ -241,7 +241,7 @@ def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
             if label in label_colors:
                 data = {
                     "label": label,
-                    "subcategory": r["_id"].get("subcategory", label),
+                    "subcategory": r["_id"]["subcategory"] or label,
                     "amount": r["amount"],
                     "percentage": round((r["amount"] / total * 100), 2),
                     "color": label_colors[label]
@@ -253,6 +253,50 @@ def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
     except Exception as e:
         print(f"Error in pie chart data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+# @app.get("/pie-chart-data/{user_id}")
+# def get_pie_chart_data(user_id: str, db: Database = Depends(get_db)):
+#     try:
+#         user_object_id = ObjectId(user_id)
+#         transactions = db["transactions"]
+#         labels = db["labels"]
+
+#         # Get all labels with colors first
+#         label_colors = {
+#             label["label"]: label["color"]
+#             for label in labels.find({}, {"label": 1, "color": 1, "_id": 0})
+#         }
+#         pipeline = [
+#         {"$match": {"sender_id": user_object_id}},
+#         {"$group": {
+#             "_id": {
+#             "label": "$label",
+#             "subcategory": {"$ifNull": ["$subcategory", "Other"]}  # Change default to "Other" or something else
+#             },
+#             "amount": {"$sum": "$amount"}
+#         }}
+#         ]
+
+#         results = list(transactions.aggregate(pipeline))
+#         total = sum(r["amount"] for r in results)
+
+#         chart_data = []
+#         for r in results:
+#             label = r["_id"]["label"]
+#             if label in label_colors:
+#                 data = {
+#                     "label": label,
+#                     "subcategory": r["_id"].get("subcategory", label),
+#                     "amount": r["amount"],
+#                     "percentage": round((r["amount"] / total * 100), 2),
+#                     "color": label_colors[label]
+#                 }
+#                 chart_data.append(data)
+
+#         return {"data": chart_data}
+
+#     except Exception as e:
+#         print(f"Error in pie chart data: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
 @app.get("/transactions/{user_id}")
 def get_transactions(user_id: str, db: Database = Depends(get_db)):
     try:
